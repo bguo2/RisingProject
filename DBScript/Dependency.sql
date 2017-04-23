@@ -1,4 +1,8 @@
 
+DROP PROCEDURE IF EXISTS `sp_check_user_exist`; 
+DROP PROCEDURE IF EXISTS `sp_create_owner`; 
+DROP PROCEDURE IF EXISTS `sp_create_house`; 
+
 drop table renters_depends;
 drop table renters_Other;
 drop table renters_autos;

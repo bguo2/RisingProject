@@ -11,5 +11,6 @@ namespace RisingWebApp.Managers
     {
         Task<bool> CreateOwner(OwnerModel model);
         Task<int> CheckUserExistence(string email);
+        Task<HouseModel> CreateHouse(HouseModel model);
     }
 }

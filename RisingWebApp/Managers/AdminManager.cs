@@ -30,5 +30,14 @@ namespace RisingWebApp.Managers
             var result = _repository.CreateOwner(model);
             return (result != null);
         }
+
+        public async Task<HouseModel> CreateHouse(HouseModel model)
+        {
+            if (string.IsNullOrEmpty(model.Address) || string.IsNullOrEmpty(model.City) ||
+                string.IsNullOrEmpty(model.State) || string.IsNullOrEmpty(model.PostCode))
+                return null;
+            var result = await _repository.CreateHouse(model);
+            return result;
+        }
     }
 }

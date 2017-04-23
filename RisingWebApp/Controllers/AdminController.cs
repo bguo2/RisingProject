@@ -38,8 +38,8 @@ namespace RisingWebApp.Controllers
         }
 
         [HttpPut]
-        [AllowAnonymous]
-        public async Task<HttpResponseMessage> CreateOwner(OwnerModel model)
+        [Route("api/Admin/CreateOwner")]
+        public async Task<HttpResponseMessage> CreateOwner([FromBody] OwnerModel model)
         {
             if (model == null || string.IsNullOrEmpty(model.Email) || 
                     (string.IsNullOrEmpty(model.FirstName) && string.IsNullOrEmpty(model.LastName)))
@@ -58,8 +58,19 @@ namespace RisingWebApp.Controllers
 
             var result = await _adminManager.CreateOwner(model);
             if (result)
-                return Request.CreateResponse(HttpStatusCode.Created, model);
+                return Request.CreateResponse(HttpStatusCode.OK, model);
             return Request.CreateResponse(HttpStatusCode.BadRequest);
+        }
+
+        [HttpPut]
+        [AllowAnonymous]
+        [Route("api/Admin/CreateHouse")]
+        public async Task<HttpResponseMessage> CreateHouse(HouseModel model)
+        {
+            var result = await _adminManager.CreateHouse(model);
+            if(result == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest);
+            return Request.CreateResponse(HttpStatusCode.OK, result);
         }
     }
 }
