@@ -81,9 +81,6 @@ namespace RisingWebApp.Models
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
-
-        [Display(Name = "Hometown")]
-        public string Hometown { get; set; }
     }
 
     public class ResetPasswordViewModel

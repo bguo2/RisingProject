@@ -1,5 +1,7 @@
-create database risingapp;
 
+use risingapp;
+
+alter table aspnetusers add index idx_aspnetusers_Email (Email);
 
 create table owners(
 	Id int(11) not null,
@@ -9,7 +11,9 @@ create table owners(
     City varchar(50) null,
     State varchar(5) null,
     PostCode varchar(10) null,
-    BankAccount varchar(50) null,
+    BankName varchar(50) null,
+    BankRoutingNumber varchar(15) null,
+    BankAccount varchar(20) null,
     Phone varchar(15) null,
     CONSTRAINT pk_owners_Id PRIMARY KEY (Id),
     CONSTRAINT fk_owners_users_id foreign key (Id) references aspnetusers(Id),

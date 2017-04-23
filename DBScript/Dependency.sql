@@ -9,8 +9,9 @@ drop table renters_creditor_bank;
 drop table renters_references;
 drop table renters_relatives;
 drop table renters_applications;
+drop table renters_photocopies;
 
-drop table houses_status;
+drop table houses_income;
 drop table renters_personal;
 drop table houses;
 drop table owners;
