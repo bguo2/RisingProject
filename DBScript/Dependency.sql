@@ -15,6 +15,7 @@ drop table renters_relatives;
 drop table renters_applications;
 drop table renters_photocopies;
 
+drop table application_status;
 drop table houses_income;
 drop table renters_personal;
 drop table houses;

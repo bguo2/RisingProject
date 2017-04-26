@@ -13,7 +13,7 @@ using RisingWebApp.Managers;
 namespace RisingWebApp.Controllers
 {
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class AdminController : ApiController
     {
         private ApplicationUserManager _userManager;
@@ -35,6 +35,12 @@ namespace RisingWebApp.Controllers
             {
                 _userManager = value;
             }
+        }
+
+        [HttpGet]
+        public HttpResponseMessage Get()
+        {
+            return Request.CreateResponse(HttpStatusCode.OK, "This is test");
         }
 
         [HttpPut]
@@ -63,7 +69,6 @@ namespace RisingWebApp.Controllers
         }
 
         [HttpPut]
-        [AllowAnonymous]
         [Route("api/Admin/CreateHouse")]
         public async Task<HttpResponseMessage> CreateHouse(HouseModel model)
         {

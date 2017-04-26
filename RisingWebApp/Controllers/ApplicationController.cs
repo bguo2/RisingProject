@@ -7,6 +7,7 @@ using System.Web.Http;
 
 namespace RisingWebApp.Controllers
 {
+    [Authorize]
     public class ApplicationController : ApiController
     {
     }

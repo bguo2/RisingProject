@@ -1,7 +1,21 @@
 
 use risingapp;
 
-alter table aspnetusers add index idx_aspnetusers_Email (Email);
+DROP PROCEDURE IF EXISTS `sp_temp_prc`; 
+DELIMITER //
+CREATE PROCEDURE `sp_temp_prc`()
+    SQL SECURITY INVOKER
+BEGIN
+	SET @indexExists = (SELECT 1 FROM information_schema.statistics WHERE table_schema = 'risingapp' AND table_name = 'aspnetusers' 
+		AND INDEX_NAME = 'idx_aspnetusers_Email');
+	IF @indexExists is NULL THEN
+		alter table aspnetusers add index idx_aspnetusers_Email (Email);
+	END IF;     
+END //
+DELIMITER ;
+
+call sp_temp_prc();
+DROP PROCEDURE IF EXISTS `sp_temp_prc`; 
 
 create table owners(
 	Id int(11) not null,
@@ -17,9 +31,9 @@ create table owners(
     Phone varchar(15) null,
     CONSTRAINT pk_owners_Id PRIMARY KEY (Id),
     CONSTRAINT fk_owners_users_id foreign key (Id) references aspnetusers(Id),
-    INDEX idx_owner_FirstName(FirstName),
-    INDEX idx_owner_LastName(LastName),
-    INDEX idx_owner_First_Last(FirstName, LastName)
+    INDEX idx_FirstName(FirstName),
+    INDEX idx_LastName(LastName),
+    INDEX idx_First_Last(FirstName, LastName)
 ) ENGINE=INNODB;
 
 
@@ -47,7 +61,7 @@ create table renters_personal(
     FirstName varchar(50) not null,
     LastName varchar(50) not null,
     BirthDate date not null,
-    SSN varchar(12) not null,
+    SSN varchar(12) null,
     DriverLicense varchar(15) null,
     DLState varchar(3) null,
     DLExpiryDate date null,
@@ -55,11 +69,11 @@ create table renters_personal(
     WorkPhone varchar(15) null,
     CONSTRAINT pk_renters_personal_Id PRIMARY KEY (Id),
     CONSTRAINT fk_renters_personal_users_id foreign key (Id) references aspnetusers(Id),
-    INDEX idx_renters_personal_Id(Id),
-    INDEX idx_renters_personal_FirstName_LastName(FirstName, LastName),
-    INDEX idx_renters_personal_FirstName(FirstName),
-    INDEX idx_renters_personal_LastName(LastName),
-    INDEX idx_renters_personal_ssn(SSN)
+    INDEX idx_personal_Id(Id),
+    INDEX idx_personal_FirstName_LastName(FirstName, LastName),
+    INDEX idx_personal_FirstName(FirstName),
+    INDEX idx_personal_LastName(LastName),
+    INDEX idx_personal_ssn(SSN)
 ) ENGINE=INNODB;
 
 
@@ -81,6 +95,14 @@ create table houses_income(
     CONSTRAINT fk_housesstatus_renterId foreign key (RenterId) references renters_personal(Id)
 ) ENGINE=INNODB;
 
+create table application_status(
+	Id int not null auto_increment unique,
+    Name varchar(30) not null unique,
+    CONSTRAINT pk_applicaiton_sttus_Id PRIMARY KEY (Id)
+) ENGINE=INNODB;
+
+INSERT INTO application_status(Name)
+VALUES('Applying'), ('Withdrawn'), ('Pending'), ('Declined'), ('Approved'), ('MovedOut');
 
 create table renters_applications(
 	Id bigint(20) not null auto_increment unique,
@@ -93,7 +115,7 @@ create table renters_applications(
     StartDate date null,
     MoveInDate date null,
     MoveoutDate date null,
-    ApprovalStatus varchar(20) not null,
+    Status int not null,
     ApproveDate date null,
     ReturningTo varchar(50) null,
     ReturingAddress varchar(100) null,
@@ -103,13 +125,16 @@ create table renters_applications(
     Notes varchar(100) null,
     CONSTRAINT pk_renters_applications PRIMARY KEY (Id),
     CONSTRAINT fk_renters_applications_personal_RenterId foreign key (RenterId) references renters_personal(Id),
-    CONSTRAINT fk_renters_applications_houses_Id foreign key (HouseId) references houses(Id),
-    INDEX idx_renters_applications_HouseId (HouseId),
-    INDEX idx_renters_applications_RenterId(RenterId),
-    INDEX idx_renters_applications_RenterId_houseId (RenterId, HouseId),
-    INDEX idx_renters_applications_ApplicationDate (ApplicationDate),
-    INDEX idx_renters_applications_HouseId_ApprovalStatus (HouseId, ApprovalStatus),
-    INDEX idx_renters_applications_RenterId_ApprovalStatus (RenterId, ApprovalStatus)
+    CONSTRAINT fk_renters_applications_housesId foreign key (HouseId) references houses(Id),
+    CONSTRAINT fk_renters_applications_Status foreign key (Status) references application_status(Id),
+    INDEX idx_HouseId (HouseId),
+    INDEX idx_RenterId(RenterId),
+    INDEX idx_RenterId_houseId (RenterId, HouseId),
+    INDEX idx_ApplicationDate (ApplicationDate),
+    INDEX idx_HouseId_Status (HouseId, Status),
+    INDEX idx_RenterId_Status (RenterId, Status),
+    INDEX idx_RenterId_HouseId_Status (RenterId, HouseId, Status),
+    INDEX idx_RenterId_HouseId_Status_Date (RenterId, HouseId, Status, ApplicationDate)
 ) ENGINE=INNODB;
 
 create table renters_depends(
@@ -119,7 +144,7 @@ create table renters_depends(
     RelationShip varchar(20) null,
     CONSTRAINT pk_renters_depends PRIMARY KEY (Id),
     CONSTRAINT fk_renters_depends_personal_id foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_depends_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId)
 ) ENGINE=INNODB;
 
 
@@ -134,7 +159,7 @@ create table renters_autos(
     Color varchar(10) null,
     CONSTRAINT pk_renters_autos PRIMARY KEY (Id),
     CONSTRAINT fk_renters_autos_personal_id foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_autos_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId)
 ) ENGINE=INNODB;
 
 create table renters_Other(
@@ -171,7 +196,7 @@ create table renters_residence_history(
     IsCurrent bool default false,
     CONSTRAINT pk_renters_residence_history PRIMARY KEY (Id),
     CONSTRAINT fk_renters_residence_history_id foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_residence_history_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId)
 ) ENGINE=INNODB;
 
 create table renters_employment_history(
@@ -188,7 +213,7 @@ create table renters_employment_history(
     OtherIncome varchar(60) null,
     CONSTRAINT pk_renters_employment_history PRIMARY KEY (Id),
     CONSTRAINT fk_renters_employment_history_id foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_employment_history_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId)
 ) ENGINE=INNODB;
 
 create table renters_creditor(
@@ -200,8 +225,8 @@ create table renters_creditor(
     BalanceDue decimal(10, 2) default 0,
     CONSTRAINT pk_renters_creditor PRIMARY KEY (Id),
     CONSTRAINT fk_renters_creditor_RenterId foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_creditor_RenterId(RenterId),
-    INDEX idx_renters_creditor_RenterId_AccountNumber(RenterId, AccountNumber)
+    INDEX idx_RenterId(RenterId),
+    INDEX idx_RenterId_AccountNumber(RenterId, AccountNumber)
 ) ENGINE=INNODB;
 
 create table renters_creditor_bank(
@@ -213,8 +238,8 @@ create table renters_creditor_bank(
     AccountBalance decimal(10, 2) default 0,
     CONSTRAINT pk_renters_creditor_bank PRIMARY KEY (Id),
 	CONSTRAINT fk_renters_creditor_bank_RenterId foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_creditor_bank_RenterId(RenterId),
-    INDEX idx_renters_creditor_bank_RenterId_AccountNumber(RenterId, AccountNumber)
+    INDEX idx_bank_RenterId(RenterId),
+    INDEX idx_bank_RenterId_AccountNumber(RenterId, AccountNumber)
 ) ENGINE=INNODB;
 
 create table renters_references(
@@ -227,8 +252,8 @@ create table renters_references(
     Occupation varchar(30) null,    
     CONSTRAINT pk_renters_references PRIMARY KEY (Id),
     CONSTRAINT fk_renters_references_RenterId foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_references_RenterId(RenterId),
-    INDEX idx_renters_references_RenterId_Name(RenterId, Name)
+    INDEX idx_RenterId(RenterId),
+    INDEX idx_RenterId_Name(RenterId, Name)
 ) ENGINE=INNODB;
 
 
@@ -241,7 +266,7 @@ create table renters_relatives(
     RelationShip varchar(30) null,
     CONSTRAINT pk_renters_relatives PRIMARY KEY (Id),
     CONSTRAINT fk_renters_relatives_RenterId foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_renters_relatives_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId)
 ) ENGINE=INNODB;
 
 create table renters_photocopies(
@@ -251,7 +276,7 @@ create table renters_photocopies(
     Path varchar(400) null,
     CONSTRAINT pk_renters_photocopies PRIMARY KEY (Id),
     CONSTRAINT fk_renters_photocopies_RenterId foreign key (RenterId) references renters_personal(Id),
-	INDEX idx_renters_photocopies_RenterId(RenterId)
+	INDEX idx_RenterId(RenterId)
 ) ENGINE=INNODB;
 
 
