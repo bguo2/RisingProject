@@ -90,9 +90,7 @@ DELIMITER ;
 
 
 DROP PROCEDURE IF EXISTS `sp_create_renter_personal_info`; 
-
 DELIMITER //
-
 CREATE PROCEDURE `sp_create_renter_personal_info`(IN _Id int(11), IN _FirstName varchar(50), IN _LastName varchar(50),
     IN _BirthDate date, IN _SSN varchar(12), IN _DriverLicense varchar(15), IN _DLState varchar(3), IN _DLExpiryDate date,
     IN _HomePhone varchar(15), IN _WorkPhone varchar(15))
@@ -105,6 +103,55 @@ BEGIN
 		UPDATE renters_personal SET FirstName = _FirstName, LastName = _LastName, BirthDate = _BirthDate, 
 			SSN = _SSN, DriverLicense = _DriverLicense, DLState = _DLState, DLExpiryDate = _DLExpiryDate, HomePhone = _HomePhone, WorkPhone = _WorkPhone
         WHERE Id = _Id;
+    END IF;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `sp_create_renter_dependents`; 
+DELIMITER //
+CREATE PROCEDURE `sp_create_renter_dependents`(IN _RenterId int(11), IN _Name varchar(60), IN RelationShip varchar(20))
+BEGIN
+	SET @childId = (SELECT Id FROM renters_depends WHERE RenterId = _RenterId AND Name = _Name);
+    IF @childId is NULL THEN
+		INSERT INTO renters_depends(RenterID, Name, RelationShip)
+        VALUES(_RenterId, _Name, _RelationShip);
+    ELSE
+		UPDATE renters_depends SET Name = _Name, RelationShip = _RelationShip WHERE Id = @childId;
+    END IF;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `sp_create_renter_autos`; 
+DELIMITER //
+CREATE PROCEDURE `sp_create_renter_autos`(IN _RenterId int(11),  IN _Make varchar(30), IN _Model varchar(20),
+    IN Year varchar(5), IN LicenseNo varchar(20), IN State varchar(3), Color varchar(20))
+BEGIN
+	SET @autoId = (SELECT Id FROM renters_autos WHERE RenterId = _RenterId AND LicenseNo = _LicenseNo);
+    IF @autoId is NULL THEN
+		INSERT INTO renters_autos(RenterID, Make, Model, Year, LicenseNo, State, Color)
+        VALUES(_RenterId, _Make, _Model, _Year, _LicenseNo, _State, _Color);
+    ELSE
+		UPDATE renters_autos SET Make = _Make, Model = _Model, Year = _Year, LicenseNo = _LicenseNo, State = _State, Color = _Color WHERE Id = @autoId;
+    END IF;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `sp_create_renter_other`; 
+DELIMITER //
+CREATE PROCEDURE `sp_create_renter_other`(IN _RenterId int(11), IN _PetsNumber int, IN _PetsType varchar(20),
+    IN _EmergencyContact varchar(60), IN _RelationShip varchar(30), _Phone varchar(15), IN _LiquidFilledFurnitureType varchar(30),
+    IN _Bankruptcy varchar(200), IN _Felony varchar(200), IN _AskedToMoveOut varchar(200))
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM renters_Other WHERE RenterId = _RenterId) THEN
+		INSERT INTO renters_Other(RenterID, PetsNumber, PetsType, EmergencyContact, RelationShip, Phone, LiquidFilledFurnitureType,
+			Bankruptcy, Felony, AskedToMoveOut)
+        VALUES(_RenterId, _PetsNumber, _PetsType, _EmergencyContact, _RelationShip, _Phone, _LiquidFilledFurnitureType,
+			_Bankruptcy, _Felony, _AskedToMoveOut);
+    ELSE
+		UPDATE renters_Other SET PetsNumber = _PetsNumber, PetsType = _PetsType, EmergencyContact = _EmergencyContact, 
+			RelationShip = _RelationShip, Phone = _Phone, LiquidFilledFurnitureType = _LiquidFilledFurnitureType,
+			Bankruptcy = _Bankruptcy, Felony = _Felony, AskedToMoveOut = _AskedToMoveOut
+        WHERE RenterID = _RenterID;
     END IF;
 END //
 DELIMITER ;

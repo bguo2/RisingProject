@@ -70,7 +70,7 @@ namespace RisingWebApp.Controllers
 
         [HttpPut]
         [Route("api/Admin/CreateHouse")]
-        public async Task<HttpResponseMessage> CreateHouse(HouseModel model)
+        public async Task<HttpResponseMessage> CreateHouse([FromBody]HouseModel model)
         {
             var result = await _adminManager.CreateHouse(model);
             if(result == null)

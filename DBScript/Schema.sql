@@ -144,7 +144,8 @@ create table renters_depends(
     RelationShip varchar(20) null,
     CONSTRAINT pk_renters_depends PRIMARY KEY (Id),
     CONSTRAINT fk_renters_depends_personal_id foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId),
+    INDEX idx_RenterId(RenterId, Name)
 ) ENGINE=INNODB;
 
 
@@ -156,14 +157,14 @@ create table renters_autos(
     Year varchar(5) null,
     LicenseNo varchar(20) not null,
     State varchar(3) null,
-    Color varchar(10) null,
+    Color varchar(20) null,
     CONSTRAINT pk_renters_autos PRIMARY KEY (Id),
     CONSTRAINT fk_renters_autos_personal_id foreign key (RenterId) references renters_personal(Id),
-    INDEX idx_RenterId(RenterId)
+    INDEX idx_RenterId(RenterId),
+    INDEX idx_RenterId(RenterId, LicenseNo)
 ) ENGINE=INNODB;
 
 create table renters_Other(
-	Id int(11) not null,
     RenterId int(11) not null,
 	PetsNumber int default 0,
     PetsType varchar(20) null,
@@ -174,9 +175,8 @@ create table renters_Other(
     Bankruptcy varchar(200) null,
     Felony varchar(200) null,
     AskedToMoveOut varchar(200) null,
-    CONSTRAINT pk_renters_autos PRIMARY KEY (Id),
-    CONSTRAINT fk_renters_Other_id foreign key (RenterId) references renters_personal(Id),
-    INDEX renters_Other_RenterId(RenterId)
+    CONSTRAINT pk_renters_Other PRIMARY KEY (RenterId),
+    CONSTRAINT fk_renters_Other_id foreign key (RenterId) references renters_personal(Id)
 ) ENGINE=INNODB;
 
 
